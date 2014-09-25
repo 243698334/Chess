@@ -1,0 +1,22 @@
+Test Plan for GUI
+
+1.  Main game window
+    a) Test all menu bar features
+    (including New Game, Save Game, Preferences, Exit, and About).
+    For features haven't implemented, a print statement indicating the backend method is being called should be shown in the console.
+    b) Test the control panel
+    The timer should start with White player after the game starts. And switch after a move is made.
+    Buttons should work properly.
+    For features haven't implemented, a print statement indicating the backend method is being called should be shown in the console.
+
+2.  Piece Move
+    a) Regular pieces
+    All pieces are being tested with move and capture start with the initial state of the chessboard.
+    b) Custom pieces
+    As above.
+
+3.  Game conditions
+    a) Check
+    A colored label should show up in the control panel on the right.
+    b) Checkmate
+    A dialog should popup indicating who the winner will be.
