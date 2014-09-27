@@ -1,9 +1,12 @@
 package com.kevinychen.chess.main.ui;
 
+import com.kevinychen.chess.main.pieces.Pawn;
+import com.kevinychen.chess.main.pieces.Piece;
 import com.kevinychen.chess.main.util.GameModel;
 import com.kevinychen.chess.main.util.Move;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.util.Observable;
 import java.util.Observer;
@@ -11,45 +14,59 @@ import java.util.Observer;
 public class MoveHistoryPanel extends JPanel implements Observer {
 
     private GameModel gameModel;
+    private JScrollPane moveHistoryScrollPane;
     private JTextArea moveHistoryTextArea;
+    private String moveHistoryContent;
 
     public MoveHistoryPanel(GameModel gameModel) {
-        super(new GridLayout());
         this.gameModel = gameModel;
         initialize();
     }
 
     public void printMove(Move move) {
         String newMoveEntry = "";
-        newMoveEntry.concat(move.getPiece().getColor().toString() + " ");
-        newMoveEntry.concat(move.getPiece().getType().toString() + ": ");
-        newMoveEntry.concat(move.getOriginFile() + move.getOriginRank() + " - ");
-        newMoveEntry.concat(move.getDestinationFile() + move.getDestinationRank() + " ");
+        newMoveEntry += move.getPiece().getColor().toString() + " ";
+        newMoveEntry += move.getPiece().getType().toString() + ": ";
+        newMoveEntry += move.getOriginFile();
+        newMoveEntry += move.getOriginRank() + " - ";
+        newMoveEntry += move.getDestinationFile();
+        newMoveEntry += move.getDestinationRank() + " ";
         if (move.getCapturedPiece() != null) {
-            newMoveEntry.concat("captures ");
-            newMoveEntry.concat(move.getCapturedPiece().getType().toString());
+            newMoveEntry += "captures ";
+            newMoveEntry += move.getCapturedPiece().getType().toString();
         }
-        newMoveEntry.concat("\n");
-        moveHistoryTextArea.append(newMoveEntry);
-        moveHistoryTextArea.update(moveHistoryTextArea.getGraphics());
-        moveHistoryTextArea.repaint();
-        this.revalidate();
+        newMoveEntry += "\n";
+
+        moveHistoryContent += newMoveEntry;
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                moveHistoryTextArea.setText(moveHistoryContent);
+            }
+        });
     }
 
     public void deleteLastMove() {
-        String moveHistoryContent = moveHistoryTextArea.getText();
         moveHistoryContent = moveHistoryContent.substring(0, moveHistoryContent.lastIndexOf('\n'));
-        moveHistoryTextArea.setText(moveHistoryContent);
-        moveHistoryTextArea.update(moveHistoryTextArea.getGraphics());
-        moveHistoryTextArea.revalidate();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                moveHistoryTextArea.setText(moveHistoryContent);
+            }
+        });
     }
 
     private void initialize() {
-        moveHistoryTextArea = new JTextArea("Game start!\n");
+        moveHistoryContent = new String("Game start!\n");
+        moveHistoryTextArea = new JTextArea(moveHistoryContent);
         moveHistoryTextArea.setBackground(Color.GRAY);
-        moveHistoryTextArea.setPreferredSize(new Dimension(300, 400));
-        this.setBorder(BorderFactory.createTitledBorder("Move History"));
-        this.add(moveHistoryTextArea);
+        moveHistoryScrollPane = new JScrollPane(moveHistoryTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        moveHistoryScrollPane.setBorder(BorderFactory.createTitledBorder("Move History"));
+        moveHistoryScrollPane.setViewportView(moveHistoryTextArea);
+        moveHistoryScrollPane.setPreferredSize(new Dimension(300, 400));
+        //this.setPreferredSize(new Dimension(300, 400));
+        this.add(moveHistoryScrollPane);
     }
 
     @Override
@@ -59,8 +76,12 @@ public class MoveHistoryPanel extends JPanel implements Observer {
 
     public static void main(String[] args) {
         JFrame testFrame = new JFrame("MoveHistoryPanel Test");
+        //testFrame.setPreferredSize(new Dimension(300, 400));
         MoveHistoryPanel testMoveHistoryPanel = new MoveHistoryPanel(new GameModel());
         testFrame.add(testMoveHistoryPanel);
+        for (int i = 0; i < 30; i++) {
+            testMoveHistoryPanel.printMove(new Move(new Pawn(Piece.Color.WHITE), new Pawn(Piece.Color.BLACK), 'a', i, 'a', 5));
+        }
         testFrame.pack();
         testFrame.setVisible(true);
     }

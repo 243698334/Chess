@@ -19,7 +19,6 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
         originRank = calculateRank(e);
         dragOffsetX = e.getPoint().x - boardPanel.SQUARE_DIMENSION * (calculateFile(e) - 'a');
         dragOffsetY = e.getPoint().y - boardPanel.SQUARE_DIMENSION * (8 - calculateRank(e));
-        // System.out.println("[" + calculateFile(e) + ", " + calculateRank(e) + "] Mouse Pressed at (" + e.getPoint().x + ", " + e.getPoint().y + ") with offset (" + dragOffsetX + ", " + dragOffsetY + ")");
     }
 
     @Override
@@ -36,7 +35,6 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
         dragging = true;
         BoardPanel boardPanel = (BoardPanel) e.getSource();
         boardPanel.executeDrag(originFile, originRank, e.getPoint().x - dragOffsetX, e.getPoint().y - dragOffsetY);
-        // System.out.println("[" + calculateFile(e) + ", " + calculateRank(e) + "] Mouse Dragged at (" + e.getPoint().x + ", " + e.getPoint().y + ")");
     }
 
     @Override

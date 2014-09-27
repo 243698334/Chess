@@ -85,9 +85,13 @@ public class MoveLogger {
      */
     public static Move undoLastMove() {
         if (moveRoundBuffer.size() == 0) {
-            MoveRound currentRound = moveHistory.remove(moveHistory.size() - 1);
-            moveRoundBuffer.add(currentRound.getMove(Piece.Color.WHITE));
-            return currentRound.getMove(Piece.Color.BLACK);
+            if (moveHistory.size() > 0) {
+                MoveRound currentRound = moveHistory.remove(moveHistory.size() - 1);
+                moveRoundBuffer.add(currentRound.getMove(Piece.Color.WHITE));
+                return currentRound.getMove(Piece.Color.BLACK);
+            } else {
+                return null;
+            }
         } else {
             return moveRoundBuffer.remove(0);
         }
