@@ -6,25 +6,31 @@ import java.awt.event.MouseMotionListener;
 
 public class PieceDragAndDropListener implements MouseListener, MouseMotionListener {
 
+    private BoardPanel boardPanel;
+
     private boolean dragging;
     private char originFile;
     private int originRank;
     private int dragOffsetX;
     private int dragOffsetY;
 
+    public PieceDragAndDropListener(BoardPanel boardPanel) {
+        this.boardPanel = boardPanel;
+    }
+
     @Override
     public void mousePressed(MouseEvent e) {
-        BoardPanel boardPanel = (BoardPanel) e.getSource();
         originFile = calculateFile(e);
         originRank = calculateRank(e);
         dragOffsetX = e.getPoint().x - boardPanel.SQUARE_DIMENSION * (calculateFile(e) - 'a');
         dragOffsetY = e.getPoint().y - boardPanel.SQUARE_DIMENSION * (8 - calculateRank(e));
+        boardPanel.preDrag(originFile, originRank, e.getPoint().x - dragOffsetX, e.getPoint().y - dragOffsetY);
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (dragging) {
-            BoardPanel boardPanel = (BoardPanel) e.getSource();
+            boardPanel.postDrag();
             boardPanel.submitMoveRequest(originFile, originRank, calculateFile(e), calculateRank(e));
         }
         dragging = false;
@@ -33,8 +39,7 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
     @Override
     public void mouseDragged(MouseEvent e) {
         dragging = true;
-        BoardPanel boardPanel = (BoardPanel) e.getSource();
-        boardPanel.executeDrag(originFile, originRank, e.getPoint().x - dragOffsetX, e.getPoint().y - dragOffsetY);
+        boardPanel.executeDrag(e.getPoint().x - dragOffsetX, e.getPoint().y - dragOffsetY);
     }
 
     @Override
@@ -58,11 +63,11 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
     }
 
     private char calculateFile(MouseEvent e) {
-        return (char) ('a' + e.getPoint().x / ((BoardPanel)e.getSource()).SQUARE_DIMENSION);
+        return (char) ('a' + e.getPoint().x / boardPanel.SQUARE_DIMENSION);
     }
 
     private int calculateRank(MouseEvent e) {
-        return 8 - e.getPoint().y / ((BoardPanel)e.getSource()).SQUARE_DIMENSION;
+        return 8 - e.getPoint().y / boardPanel.SQUARE_DIMENSION;
     }
 
 }

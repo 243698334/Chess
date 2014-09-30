@@ -17,8 +17,9 @@ public class BoardPanel extends JPanel implements Observer {
 
     private GameModel gameModel;
     private boolean reverse;
+    private JLayeredPane boardLayeredPane;
+    private JPanel boardPanel;
     private JPanel[][] squarePanels;
-    private Image draggedPieceImage;
 
     /**
      * Constructor for the BoardPanel.
@@ -26,12 +27,12 @@ public class BoardPanel extends JPanel implements Observer {
      * @param gameModel Reference to the GameModel instance
      */
     public BoardPanel(GameModel gameModel) {
-        super(new GridLayout(8, 8));
+        super(new BorderLayout());
         this.gameModel = gameModel;
         this.reverse = gameModel.isReverseBoard();
+        initializeBoardLayeredPane();
         initializeSquares();
         initializePieces();
-        initializeDragAndDropListener();
         gameModel.addObserver(this);
     }
 
@@ -44,7 +45,6 @@ public class BoardPanel extends JPanel implements Observer {
      * @param destinationRank
      */
     public void submitMoveRequest(char originFile, int originRank, char destinationFile, int destinationRank) {
-        draggedPieceImage = null;
         if (getSquarePanel(originFile, originRank).getComponent(0) != null ) {
             getSquarePanel(originFile, originRank).getComponent(0).setVisible(true);
             gameModel.onMoveRequest(originFile, originRank, destinationFile, destinationRank);
@@ -84,29 +84,44 @@ public class BoardPanel extends JPanel implements Observer {
     }
 
     /**
-     * Execute a drag effect, called by the PieceDragAndDropListener
+     * Prepare for the drag effect by adding an image label of the dragged piece to the drag layer
      *
-     * @param originFile File value of the origin square
-     * @param originRank Rank value of the origin square
-     * @param x X coordinate on the BoardPanel where the image of the piece is shown
-     * @param y Y coordinate on the BoardPanel where the image of the piece is shown
+     * @param originFile The index of the square on the board
+     * @param originRank The index of the square on the board
+     * @param dragX The coordinates where the drag begins
+     * @param dragY The coordinates where the drag begins
      */
-    public void executeDrag(char originFile, int originRank, int x, int y) {
-        Piece originPiece = gameModel.onQueryRequest(originFile, originRank);
+    public void preDrag(char originFile, int originRank, int dragX, int dragY) {
+        Piece originPiece = gameModel.queryPiece(originFile, originRank);
         if (originPiece != null) {
             getSquarePanel(originFile, originRank).getComponent(0).setVisible(false);
-            draggedPieceImage = getPieceImage(originPiece);
-            if (draggedPieceImage == null || draggedPieceImage.getHeight(null) == 0) {
-                System.out.println("NULL!");
-            }
             JLabel draggedPieceImageLabel = getPieceImageLabel(originPiece);
-            draggedPieceImageLabel.setBounds(x, y, SQUARE_DIMENSION, SQUARE_DIMENSION);
-            draggedPieceImageLabel.setVisible(true);
-            this.getParent().getGraphics().drawImage(draggedPieceImage, x, y, null);
-            this.validate();
-            this.repaint();
-            SwingUtilities.getWindowAncestor(this).repaint();
+            draggedPieceImageLabel.setLocation(dragX, dragY);
+            draggedPieceImageLabel.setSize(SQUARE_DIMENSION, SQUARE_DIMENSION);
+            boardLayeredPane.add(draggedPieceImageLabel, JLayeredPane.DRAG_LAYER);
         }
+    }
+
+    /**
+     * Execute a drag effect by moving the dragged piece's image label, called by the PieceDragAndDropListener
+     *
+     * @param dragX the new coordinates of the dragged piece's image label
+     * @param dragY the new coordinates of the dragged piece's image label
+     */
+    public void executeDrag(int dragX, int dragY) {
+        JLabel draggedPieceImageLabel = (JLabel) boardLayeredPane.getComponentsInLayer(JLayeredPane.DRAG_LAYER)[0];
+        if (draggedPieceImageLabel != null) {
+            draggedPieceImageLabel.setLocation(dragX, dragY);
+        }
+    }
+
+    /**
+     * Remove the dragged piece's image label from the drag layer, called by the PieceDragAndDropListener
+     */
+    public void postDrag() {
+        JLabel draggedPieceImageLabel = (JLabel) boardLayeredPane.getComponentsInLayer(JLayeredPane.DRAG_LAYER)[0];
+        boardLayeredPane.remove(draggedPieceImageLabel);
+        boardLayeredPane.repaint();
     }
 
     /**
@@ -150,10 +165,7 @@ public class BoardPanel extends JPanel implements Observer {
         squarePanels[f][r].setPreferredSize(new Dimension(SQUARE_DIMENSION, SQUARE_DIMENSION));
         squarePanels[f][r].setSize(new Dimension(SQUARE_DIMENSION, SQUARE_DIMENSION));
         squarePanels[f][r].setBackground(f % 2 == r % 2 ? Color.GRAY : Color.WHITE);
-        this.add(squarePanels[f][r]);
-        // test
-        //JLabel coordinates = new JLabel((char)('a'+f) + ", " + r);
-        //squarePanels[f][r].add(coordinates);
+        boardPanel.add(squarePanels[f][r]);
     }
 
     /**
@@ -205,10 +217,17 @@ public class BoardPanel extends JPanel implements Observer {
         getSquarePanel('e', 8).add(getPieceImageLabel(blackKingIterator.next()));
     }
 
-    private void initializeDragAndDropListener() {
-        PieceDragAndDropListener pieceDragAndDropListener = new PieceDragAndDropListener();
-        this.addMouseListener(pieceDragAndDropListener);
-        this.addMouseMotionListener(pieceDragAndDropListener);
+    private void initializeBoardLayeredPane() {
+        boardPanel = new JPanel(new GridLayout(8, 8));
+        boardPanel.setBounds(0, 0, 800, 800);
+        boardLayeredPane = new JLayeredPane();
+        boardLayeredPane.setPreferredSize(new Dimension(800, 800));
+        boardLayeredPane.add(boardPanel, JLayeredPane.DEFAULT_LAYER);
+        PieceDragAndDropListener pieceDragAndDropListener = new PieceDragAndDropListener(this);
+        boardLayeredPane.addMouseListener(pieceDragAndDropListener);
+        boardLayeredPane.addMouseMotionListener(pieceDragAndDropListener);
+        boardLayeredPane.setVisible(true);
+        this.add(boardLayeredPane, BorderLayout.CENTER);
     }
 
     private JLabel getPieceImageLabel(Piece piece) {
@@ -218,24 +237,10 @@ public class BoardPanel extends JPanel implements Observer {
         return pieceImageLabel;
     }
 
-    private Image getPieceImage(Piece piece) {
-        Image pieceImage = new ImageIcon(getClass().getResource(piece.getImageFileName())).getImage();
-        return pieceImage.getScaledInstance(SQUARE_DIMENSION, SQUARE_DIMENSION, Image.SCALE_SMOOTH);
-    }
-
     @Override
     public void update(Observable o, Object arg) {
         // test
         executeMove((Move) arg);
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        JFrame testFrame = new JFrame("BoardPanel Test");
-        //testFrame.setPreferredSize(new Dimension(600, 600));
-        BoardPanel boardPanel = new BoardPanel(new GameModel());
-        testFrame.add(boardPanel);
-        testFrame.pack();
-        testFrame.setVisible(true);
-
-    }
 }

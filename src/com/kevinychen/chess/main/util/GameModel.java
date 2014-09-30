@@ -58,7 +58,7 @@ public class GameModel extends Observable {
         // TODO timer update
     }
 
-    public Piece onQueryRequest(char file, int rank) {
+    public Piece queryPiece(char file, int rank) {
         return Board.getSquare(file, rank).getCurrentPiece();
     }
 
