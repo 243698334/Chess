@@ -32,6 +32,7 @@ public class NetworkHandler implements Runnable {
     }
 
     public synchronized boolean sendMoveMessage(Move move) {
+        dispatchEnabled = false;
         NetworkMessage moveMessage = new NetworkMessage(NetworkMessage.Type.MOVE);
         moveMessage.setMove(move.getOriginFile(), move.getOriginRank(), move.getDestinationFile(), move.getDestinationRank());
         try {
@@ -40,6 +41,7 @@ public class NetworkHandler implements Runnable {
         } catch (IOException e) {
             // notify GameModel
             // end connection
+            dispatchEnabled = true;
             return false;
         }
 
@@ -49,16 +51,20 @@ public class NetworkHandler implements Runnable {
         } catch (IOException | ClassNotFoundException e) {
             // notify GameModel
             // end connection
+            dispatchEnabled = true;
             return false;
         }
         if (NetworkMessage.Type.MOVE_RESPONSE.equals(responseMoveMessage.getType())) {
+            dispatchEnabled = true;
             return responseMoveMessage.isMoveValid();
         } else {
+            dispatchEnabled = true;
             return false;
         }
     }
 
     private synchronized void onMoveMessage(NetworkMessage moveMessage) {
+        dispatchEnabled = false;
         System.out.println("MoveMessage - inbound: received");
         NetworkMessage responseMoveMessage = new NetworkMessage(NetworkMessage.Type.MOVE_RESPONSE);
         if (gameModel.onInboundRemoteMoveRequest(moveMessage.getOriginFile(), moveMessage.getOriginRank(), moveMessage.getDestinationFile(), moveMessage.getDestinationRank())) {
@@ -70,6 +76,7 @@ public class NetworkHandler implements Runnable {
         try {
             outputStream.writeObject(responseMoveMessage);
             outputStream.flush();
+            dispatchEnabled = true;
         } catch (IOException e) {
             // notify GameModel
             // end connection
@@ -222,7 +229,7 @@ public class NetworkHandler implements Runnable {
                             break;
                     }
                 } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
                 //} while (!receivedMessage.getType().equals(NetworkMessage.Type.DISCONNECT));
             } while (true);
