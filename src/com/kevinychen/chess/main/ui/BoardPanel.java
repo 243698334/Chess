@@ -2,6 +2,7 @@ package com.kevinychen.chess.main.ui;
 
 import com.kevinychen.chess.main.pieces.Piece;
 import com.kevinychen.chess.main.pieces.PieceSet;
+import com.kevinychen.chess.main.util.Core;
 import com.kevinychen.chess.main.util.GameModel;
 import com.kevinychen.chess.main.util.Move;
 
@@ -16,7 +17,8 @@ public class BoardPanel extends JPanel implements Observer {
     public static final int SQUARE_DIMENSION = 100;
 
     private GameModel gameModel;
-    private boolean reverse;
+    private boolean boardReversed;
+    private boolean usingCustomPieces;
     private JLayeredPane boardLayeredPane;
     private JPanel boardPanel;
     private JPanel[][] squarePanels;
@@ -29,7 +31,8 @@ public class BoardPanel extends JPanel implements Observer {
     public BoardPanel(GameModel gameModel) {
         super(new BorderLayout());
         this.gameModel = gameModel;
-        this.reverse = gameModel.isReverseBoard();
+        this.boardReversed = Core.getPreferences().isBoardReversed();
+        this.usingCustomPieces = Core.getPreferences().isUsingCustomPieces();
         initializeBoardLayeredPane();
         initializeSquares();
         initializePieces();
@@ -145,7 +148,7 @@ public class BoardPanel extends JPanel implements Observer {
      */
     private void initializeSquares() {
         squarePanels = new JPanel[8][8];
-        if (reverse) {
+        if (boardReversed) {
             for (int r = 0; r < 8; r ++) {
                 for (int f = 7; f >= 0; f--) {
                     initializeSingleSquarePanel(f, r);
@@ -215,6 +218,24 @@ public class BoardPanel extends JPanel implements Observer {
         Iterator<Piece> blackKingIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.KING).iterator();
         getSquarePanel('e', 1).add(getPieceImageLabel(whiteKingIterator.next()));
         getSquarePanel('e', 8).add(getPieceImageLabel(blackKingIterator.next()));
+
+        if (usingCustomPieces) {
+            // cannons
+            Iterator<Piece> whiteCannonIterator = PieceSet.getPieces(Piece.Color.WHITE, Piece.Type.CANNON).iterator();
+            Iterator<Piece> blackCannonIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.CANNON).iterator();
+            getSquarePanel('a', 1).removeAll();
+            getSquarePanel('a', 1).add(getPieceImageLabel(whiteCannonIterator.next()));
+            getSquarePanel('h', 8).removeAll();
+            getSquarePanel('h', 8).add(getPieceImageLabel(blackCannonIterator.next()));
+
+            // shields
+            Iterator<Piece> whiteShieldIterator = PieceSet.getPieces(Piece.Color.WHITE, Piece.Type.SHIELD).iterator();
+            Iterator<Piece> blackShieldIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.SHIELD).iterator();
+            getSquarePanel('f', 1).removeAll();
+            getSquarePanel('f', 1).add(getPieceImageLabel(whiteShieldIterator.next()));
+            getSquarePanel('c', 8).removeAll();
+            getSquarePanel('c', 8).add(getPieceImageLabel(blackShieldIterator.next()));
+        }
     }
 
     private void initializeBoardLayeredPane() {
@@ -235,6 +256,10 @@ public class BoardPanel extends JPanel implements Observer {
         pieceImage = pieceImage.getScaledInstance(SQUARE_DIMENSION, SQUARE_DIMENSION, Image.SCALE_SMOOTH);
         JLabel pieceImageLabel = new JLabel(new ImageIcon(pieceImage));
         return pieceImageLabel;
+    }
+
+    public boolean isBoardReversed() {
+        return boardReversed;
     }
 
     @Override

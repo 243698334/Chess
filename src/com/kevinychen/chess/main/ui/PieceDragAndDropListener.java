@@ -22,9 +22,13 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
     public void mousePressed(MouseEvent e) {
         originFile = calculateFile(e);
         originRank = calculateRank(e);
-        dragOffsetX = e.getPoint().x - boardPanel.SQUARE_DIMENSION * (calculateFile(e) - 'a');
-        dragOffsetY = e.getPoint().y - boardPanel.SQUARE_DIMENSION * (8 - calculateRank(e));
-
+        if (boardPanel.isBoardReversed()) {
+            dragOffsetX = e.getPoint().x - boardPanel.SQUARE_DIMENSION * ('h' - calculateFile(e));
+            dragOffsetY = e.getPoint().y - boardPanel.SQUARE_DIMENSION * (calculateRank(e) - 1);
+        } else {
+            dragOffsetX = e.getPoint().x - boardPanel.SQUARE_DIMENSION * (calculateFile(e) - 'a');
+            dragOffsetY = e.getPoint().y - boardPanel.SQUARE_DIMENSION * (8 - calculateRank(e));
+        }
     }
 
     @Override
@@ -67,11 +71,19 @@ public class PieceDragAndDropListener implements MouseListener, MouseMotionListe
     }
 
     private char calculateFile(MouseEvent e) {
-        return (char) ('a' + e.getPoint().x / boardPanel.SQUARE_DIMENSION);
+        if (boardPanel.isBoardReversed()) {
+            return (char) ('h' - e.getPoint().x / boardPanel.SQUARE_DIMENSION);
+        } else {
+            return (char) ('a' + e.getPoint().x / boardPanel.SQUARE_DIMENSION);
+        }
     }
 
     private int calculateRank(MouseEvent e) {
-        return 8 - e.getPoint().y / boardPanel.SQUARE_DIMENSION;
+        if (boardPanel.isBoardReversed()) {
+            return 1 + e.getPoint().y / boardPanel.SQUARE_DIMENSION;
+        } else {
+            return 8 - e.getPoint().y / boardPanel.SQUARE_DIMENSION;
+        }
     }
 
 }

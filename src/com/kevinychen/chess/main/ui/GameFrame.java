@@ -1,5 +1,6 @@
 package com.kevinychen.chess.main.ui;
 
+import com.kevinychen.chess.main.util.Core;
 import com.kevinychen.chess.main.util.GameModel;
 
 import javax.swing.*;
@@ -44,12 +45,16 @@ public class GameFrame extends JFrame implements Observer{
 
     }
 
+    public void showCheckDialog() {
+        JOptionPane.showMessageDialog(this, "That's a Check!", "Check", JOptionPane.WARNING_MESSAGE);
+    }
+
     private void loadInterface() {
         initializeMenuBar();
         initializePanels();
         this.setResizable(false);
         this.pack();
-        this.setLocationRelativeTo(null);
+        this.setLocationRelativeTo(Core.getLaunchFrame());
         this.setVisible(true);
     }
 
@@ -166,10 +171,4 @@ public class GameFrame extends JFrame implements Observer{
         this.add(moveHistoryPanel);
     }
 
-    public static void main(String[] args) {
-        GameModel gameModel = new GameModel();
-        GameFrame testFrame = new GameFrame(gameModel);
-        testFrame.pack();
-        testFrame.setVisible(true);
-    }
 }

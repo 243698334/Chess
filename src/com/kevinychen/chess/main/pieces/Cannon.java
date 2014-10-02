@@ -11,26 +11,35 @@ public class Cannon extends Piece {
 
     @Override
     public boolean validateMove(Move move) {
+        int fileDirection = Integer.signum(move.getDestinationFile() - move.getOriginFile());
+        int rankDirection = Integer.signum(move.getDestinationRank() - move.getOriginRank());
+
         // move
         if (move.getCapturedPiece() == null) {
             // along file
             if (move.getDestinationFile() == move.getOriginFile()
                     && move.getDestinationRank() != move.getOriginRank()) {
-                return true;
+                for (int rank = move.getOriginRank() + rankDirection; rank != move.getDestinationRank(); rank += rankDirection) {
+                    if (Board.getSquare(move.getOriginFile(), rank).getCurrentPiece() != null) {
+                        return false;
+                    }
+                }
             }
             // along rank
             if (move.getDestinationFile() != move.getOriginFile()
                     && move.getDestinationRank() == move.getOriginRank()) {
-                return true;
+                for (char file = (char) (move.getOriginFile() + fileDirection); file != move.getDestinationFile(); file += fileDirection) {
+                    if (Board.getSquare(file, move.getOriginRank()).getCurrentPiece() != null) {
+                        return false;
+                    }
+                }
             }
-            return false;
         }
 
         // capture
-        int fileDirection = Integer.signum(move.getDestinationFile() - move.getOriginFile());
-        int rankDirection = Integer.signum(move.getDestinationRank() - move.getOriginRank());
-        int hurdleCount = 0;
-        if (move.getCapturedPiece().getType().equals(Piece.Type.SHIELD)) {
+        if (move.getCapturedPiece() != null && !move.getCapturedPiece().getType().equals(Piece.Type.SHIELD)) {
+            int hurdleCount = 0;
+            // along file
             if (move.getDestinationFile() - move.getOriginFile() == 0
                     && move.getDestinationRank() - move.getOriginRank() != 0) {
                 for (int rank = move.getOriginRank() + rankDirection; rank != move.getDestinationRank(); rank += rankDirection) {
@@ -40,7 +49,7 @@ public class Cannon extends Piece {
                 }
             }
 
-            // along rank (different file)
+            // along rank
             if (move.getDestinationFile() - move.getOriginFile() != 0
                     && move.getDestinationRank() - move.getOriginRank() == 0) {
                 for (char file = (char) (move.getOriginFile() + fileDirection); file != move.getDestinationFile(); file += fileDirection) {
@@ -49,7 +58,9 @@ public class Cannon extends Piece {
                     }
                 }
             }
-            return hurdleCount == 1;
+            if (hurdleCount == 1) {
+                return Board.getSquare(move.getDestinationFile(), move.getDestinationRank()).getCurrentPiece() != null;
+            }
         }
 
         // all other cases

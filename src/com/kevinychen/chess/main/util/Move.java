@@ -12,6 +12,7 @@ public class Move {
     private char destinationFile;
     private int destinationRank;
     private boolean valid;
+    private int timeUsed;
 
     public Move(char originFile, int originRank, char destinationFile, int destinationRank) {
         this.piece = Board.getSquare(originFile, originRank).getCurrentPiece();
@@ -72,7 +73,11 @@ public class Move {
     }
 
     public boolean isValid() {
-        return this.valid;
+        return valid;
+    }
+
+    public int getTimeUsed() {
+        return timeUsed;
     }
 
 }

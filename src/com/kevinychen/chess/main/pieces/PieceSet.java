@@ -25,13 +25,6 @@ public class PieceSet {
         initialize();
     }
 
-    public static void initialize(boolean customPieces) {
-        initialize();
-        if (customPieces) {
-            initializeCustomPieces();
-        }
-    }
-
     private static void initialize() {
         initializePieceSet();
         initializeCapturedPieceSet();
@@ -173,18 +166,32 @@ public class PieceSet {
         whiteQueen.add(new Queen(Piece.Color.WHITE));
         blackQueen.add(new Queen(Piece.Color.BLACK));
 
+        List<Piece> whiteCannon = new ArrayList<Piece>();
+        List<Piece> blackCannon = new ArrayList<Piece>();
+        whiteCannon.add(new Cannon(Piece.Color.WHITE));
+        blackCannon.add(new Cannon(Piece.Color.BLACK));
+
+        List<Piece> whiteShield = new ArrayList<Piece>();
+        List<Piece> blackShield = new ArrayList<Piece>();
+        whiteShield.add(new Shield(Piece.Color.WHITE));
+        blackShield.add(new Shield(Piece.Color.BLACK));
+
         whitePieces.put(Piece.Type.PAWN, whitePawns);
         whitePieces.put(Piece.Type.ROOK, whiteRooks);
         whitePieces.put(Piece.Type.KNIGHT, whiteKnights);
         whitePieces.put(Piece.Type.BISHOP, whiteBishops);
         whitePieces.put(Piece.Type.KING, whiteKing);
         whitePieces.put(Piece.Type.QUEEN, whiteQueen);
+        whitePieces.put(Piece.Type.CANNON, whiteCannon);
+        whitePieces.put(Piece.Type.SHIELD, whiteShield);
         blackPieces.put(Piece.Type.PAWN, blackPawns);
         blackPieces.put(Piece.Type.ROOK, blackRooks);
         blackPieces.put(Piece.Type.KNIGHT, blackKnights);
         blackPieces.put(Piece.Type.BISHOP, blackBishops);
         blackPieces.put(Piece.Type.KING, blackKing);
         blackPieces.put(Piece.Type.QUEEN, blackQueen);
+        blackPieces.put(Piece.Type.CANNON, blackCannon);
+        blackPieces.put(Piece.Type.SHIELD, blackShield);
 
         pieceSet.put(Piece.Color.WHITE, whitePieces);
         pieceSet.put(Piece.Color.BLACK, blackPieces);
@@ -202,23 +209,6 @@ public class PieceSet {
         whiteKingFile = blackKingFile = 'd';
         whiteKingRank = 1;
         blackKingRank = 8;
-    }
-
-    private static void initializeCustomPieces() {
-        List<Piece> whiteCannon = new ArrayList<Piece>();
-        List<Piece> blackCannon = new ArrayList<Piece>();
-        whiteCannon.add(new Cannon(Piece.Color.WHITE));
-        blackCannon.add(new Cannon(Piece.Color.BLACK));
-
-        List<Piece> whiteShield = new ArrayList<Piece>();
-        List<Piece> blackShield = new ArrayList<Piece>();
-        whiteShield.add(new Shield(Piece.Color.WHITE));
-        blackShield.add(new Shield(Piece.Color.BLACK));
-
-        pieceSet.get(Piece.Color.WHITE).put(Piece.Type.CANNON, whiteCannon);
-        pieceSet.get(Piece.Color.BLACK).put(Piece.Type.CANNON, blackCannon);
-        pieceSet.get(Piece.Color.WHITE).put(Piece.Type.SHIELD, whiteShield);
-        pieceSet.get(Piece.Color.BLACK).put(Piece.Type.SHIELD, blackShield);
     }
 
 }

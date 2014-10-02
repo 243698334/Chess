@@ -1,6 +1,7 @@
 package com.kevinychen.chess.main.board;
 
 import com.kevinychen.chess.main.pieces.*;
+import com.kevinychen.chess.main.util.Core;
 import com.kevinychen.chess.main.util.Move;
 
 import java.util.Iterator;
@@ -148,5 +149,19 @@ public class Board {
         Iterator<Piece> blackKingIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.KING).iterator();
         getSquare('e', 1).setCurrentPiece(whiteKingIterator.next());
         getSquare('e', 8).setCurrentPiece(blackKingIterator.next());
+
+        if (Core.getPreferences().isUsingCustomPieces()) {
+            // cannons
+            Iterator<Piece> whiteCannonIterator = PieceSet.getPieces(Piece.Color.WHITE, Piece.Type.CANNON).iterator();
+            Iterator<Piece> blackCannonIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.CANNON).iterator();
+            getSquare('a', 1).setCurrentPiece(whiteCannonIterator.next());
+            getSquare('h', 8).setCurrentPiece(blackCannonIterator.next());
+
+            // shields
+            Iterator<Piece> whiteShieldIterator = PieceSet.getPieces(Piece.Color.WHITE, Piece.Type.SHIELD).iterator();
+            Iterator<Piece> blackShieldIterator = PieceSet.getPieces(Piece.Color.BLACK, Piece.Type.SHIELD).iterator();
+            getSquare('f', 1).setCurrentPiece(whiteShieldIterator.next());
+            getSquare('c', 8).setCurrentPiece(blackShieldIterator.next());
+        }
     }
 }
