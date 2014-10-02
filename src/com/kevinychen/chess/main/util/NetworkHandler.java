@@ -16,6 +16,8 @@ public class NetworkHandler implements Runnable {
     private ObjectOutputStream outputStream;
     private ObjectInputStream inputStream;
 
+    private boolean dispatchEnabled;
+
     public NetworkHandler(GameModel gameModel) {
         this.gameModel = gameModel;
     }
@@ -29,7 +31,7 @@ public class NetworkHandler implements Runnable {
         }
     }
 
-    public boolean sendMoveMessage(Move move) {
+    public synchronized boolean sendMoveMessage(Move move) {
         NetworkMessage moveMessage = new NetworkMessage(NetworkMessage.Type.MOVE);
         moveMessage.setMove(move.getOriginFile(), move.getOriginRank(), move.getDestinationFile(), move.getDestinationRank());
         try {
@@ -56,7 +58,7 @@ public class NetworkHandler implements Runnable {
         }
     }
 
-    private void onMoveMessage(NetworkMessage moveMessage) {
+    private synchronized void onMoveMessage(NetworkMessage moveMessage) {
         System.out.println("MoveMessage - inbound: received");
         NetworkMessage responseMoveMessage = new NetworkMessage(NetworkMessage.Type.MOVE_RESPONSE);
         if (gameModel.onInboundRemoteMoveRequest(moveMessage.getOriginFile(), moveMessage.getOriginRank(), moveMessage.getDestinationFile(), moveMessage.getDestinationRank())) {
@@ -113,7 +115,7 @@ public class NetworkHandler implements Runnable {
         }
     }
 
-    private boolean handshake() {
+    private synchronized boolean handshake() {
         switch (preferences.getNetworkMode()) {
             case HOST:
                 return handshakeInbound();
@@ -123,7 +125,7 @@ public class NetworkHandler implements Runnable {
         return false;
     }
 
-    private boolean handshakeInbound() {
+    private synchronized boolean handshakeInbound() {
         NetworkMessage handshakeMessage = null;
         try {
             handshakeMessage = (NetworkMessage) inputStream.readObject();
@@ -160,7 +162,7 @@ public class NetworkHandler implements Runnable {
         return true;
     }
 
-    private boolean handshakeOutbound() {
+    private synchronized boolean handshakeOutbound() {
         NetworkMessage handshakeMessage = new NetworkMessage(NetworkMessage.Type.HANDSHAKE);
         handshakeMessage.setPlayerName(preferences.getPlayerName());
 
@@ -222,7 +224,8 @@ public class NetworkHandler implements Runnable {
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
                 }
-            } while (!receivedMessage.getType().equals(NetworkMessage.Type.DISCONNECT));
+                //} while (!receivedMessage.getType().equals(NetworkMessage.Type.DISCONNECT));
+            } while (true);
         }
     }
 
