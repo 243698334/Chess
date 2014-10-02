@@ -2,6 +2,7 @@ package com.kevinychen.chess.main.util;
 
 import com.kevinychen.chess.main.pieces.Piece;
 import com.kevinychen.chess.main.util.Preferences.*;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 
@@ -38,8 +39,16 @@ public class NetworkMessage implements Serializable {
         this.type = type;
     }
 
+    public NetworkMessage(String networkMessageString) {
+        parseNetworkMessage(networkMessageString);
+    }
+
     public Type getType() {
         return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public String getPlayerName() {
@@ -135,6 +144,70 @@ public class NetworkMessage implements Serializable {
 
     public void setMoveValid(boolean moveValid) {
         this.moveValid = moveValid;
+    }
+
+    @Override
+    public String toString() {
+        JSONObject networkMessageJSON = new JSONObject();
+        networkMessageJSON.put("type", type.toString());
+        switch (type) {
+            case HANDSHAKE:
+                networkMessageJSON.put("player_name", playerName);
+                networkMessageJSON.put("timer_mode", timerMode.toString());
+                if (timerMode.equals(TimerMode.COUNTDOWN)) {
+                    networkMessageJSON.put("time_limit", timeLimit);
+                }
+                networkMessageJSON.put("using_custom_pieces", usingCustomPieces);
+                break;
+            case MOVE:
+                networkMessageJSON.put("origin_file", originFile);
+                networkMessageJSON.put("origin_rank", originRank);
+                networkMessageJSON.put("destination_file", destinationFile);
+                networkMessageJSON.put("destination_rank", destinationRank);
+                break;
+            case UNDO:
+
+                break;
+            case MOVE_RESPONSE:
+                networkMessageJSON.put("move_valid", moveValid);
+                break;
+            case UNDO_RESPONSE:
+                networkMessageJSON.put("undo_accepted", undoAccepted);
+                break;
+            case DISCONNECT:
+                break;
+        }
+        return networkMessageJSON.toString();
+    }
+
+    private void parseNetworkMessage(String networkMessageString) {
+        JSONObject networkMessageJSON = new JSONObject(networkMessageString);
+        this.type = Type.valueOf(networkMessageJSON.getString("type"));
+        switch (type) {
+            case HANDSHAKE:
+                playerName = networkMessageJSON.getString("player_name");
+                timerMode = TimerMode.valueOf(networkMessageJSON.getString("timer_mode"));
+                if (timerMode.equals(TimerMode.COUNTDOWN)) {
+                    timeLimit = networkMessageJSON.getInt("time_limit");
+                }
+                usingCustomPieces = networkMessageJSON.getBoolean("using_custom_pieces");
+                break;
+            case MOVE:
+                originFile = (char) networkMessageJSON.getInt("origin_file");
+                originRank = networkMessageJSON.getInt("origin_rank");
+                destinationFile = (char) networkMessageJSON.getInt("destination_file");
+                destinationRank = networkMessageJSON.getInt("destination_rank");
+                break;
+            case UNDO:
+                break;
+            case MOVE_RESPONSE:
+                moveValid = networkMessageJSON.getBoolean("move_valid");
+                break;
+            case UNDO_RESPONSE:
+                break;
+            case DISCONNECT:
+                break;
+        }
     }
 
 }

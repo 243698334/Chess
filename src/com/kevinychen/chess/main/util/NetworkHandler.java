@@ -36,7 +36,7 @@ public class NetworkHandler implements Runnable {
         NetworkMessage moveMessage = new NetworkMessage(NetworkMessage.Type.MOVE);
         moveMessage.setMove(move.getOriginFile(), move.getOriginRank(), move.getDestinationFile(), move.getDestinationRank());
         try {
-            outputStream.writeObject(moveMessage);
+            outputStream.writeObject(moveMessage.toString());
             outputStream.flush();
         } catch (IOException e) {
             // notify GameModel
@@ -47,7 +47,7 @@ public class NetworkHandler implements Runnable {
 
         NetworkMessage responseMoveMessage = null;
         try {
-            responseMoveMessage = (NetworkMessage) inputStream.readObject();
+            responseMoveMessage = new NetworkMessage((String) inputStream.readObject());
         } catch (IOException | ClassNotFoundException e) {
             // notify GameModel
             // end connection
@@ -74,7 +74,7 @@ public class NetworkHandler implements Runnable {
         }
 
         try {
-            outputStream.writeObject(responseMoveMessage);
+            outputStream.writeObject(responseMoveMessage.toString());
             outputStream.flush();
             dispatchEnabled = true;
         } catch (IOException e) {
@@ -213,7 +213,7 @@ public class NetworkHandler implements Runnable {
         public void run() {
             do {
                 try {
-                    receivedMessage = (NetworkMessage) inputStream.readObject();
+                    receivedMessage = new NetworkMessage((String) inputStream.readObject());
                     System.out.println("MessageDispatch: message received with type [" + receivedMessage.getType().toString() + "]");
                     switch (receivedMessage.getType()) {
                         case MOVE:
